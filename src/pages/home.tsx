@@ -4,13 +4,35 @@ import { Button, Input, message, Space, Avatar, Select, } from 'antd'
 import { SetStateAction, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { setEvaluate, setMessage } from '../server'
-import Markdown from 'react-markdown'
+import Markdown, { Components } from 'react-markdown'
 import { v4 as uuidv4 } from 'uuid';
+
+import rehypeRaw from 'rehype-raw';
+import rehypeReact from 'rehype-react';
+
+const LinkRenderer = ({ href, children }: { href: string, children: React.ReactNode }) => (
+    <a href={href} target="_blank" rel="noopener noreferrer">
+        {children}
+    </a>
+);
+
+const renderers = {
+    link: ({ href, children }: { href?: string, children: React.ReactNode }) => {
+        if (href) {
+            return <LinkRenderer href={href}>{children}</LinkRenderer>;
+        } else {
+            return null; // 处理 href 为 undefined 的情况
+        }
+    },
+};
+
+
 
 const Home: React.FC = () => {
     const navigate = useNavigate()
     const userName = localStorage.getItem('userName')
     const [currentMessage, setcurrentMessage] = useState('')
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [items, setItems] = useState<{ type: number, value: string | any }[]>([])
     const [messageType, setmessageType] = useState('')
@@ -23,28 +45,115 @@ const Home: React.FC = () => {
     // 用于操作聊天列表元素的引用
     const chatListRef = useRef(null)
 
-    // 声明一个包含Markdown格式字符串的变量
-    const markdown = `
-### 123   
-## 123  
-- 123  
-- 456
-`
 
     const addMessage = async () => {
+        console.log('messageType: ', messageType);
+        console.log('currentMessage: ', currentMessage);
         if (messageType !== '' && currentMessage.trim() !== '') {
+
+
+
+            console.log("开始请求");
+            // 判断是第一次提问还是追问
+            const isFollowUp = items.length > 1
+
             setItems([...items, { type: 1, value: currentMessage }, { type: 0, value: '-1' }])
+
             const res = await setMessage({
+                isFollowUp: isFollowUp,
                 type: messageType,
                 value: currentMessage,
             })
             if (res.data.code === 200) {
                 setTimeout(() => {
-                    setcurrentMessage('')
+                    if (items.length > 4) {
+                        setcurrentMessage('')
+                    }
+                    // setcurrentMessage('')
                     setItems((old) => {
-                        console.log('old', old);
+
+                        const parsedData = res.data.data
+
+                        let markdownString = '';
+
+
+                        parsedData.forEach((item: any) => {
+                            if (item != null) {
+                                // 标题
+                                if (item.title && item.title.length > 0) {
+                                    markdownString += `以下是为您推荐的，与您问题相关性最高的回答: \n`
+                                    markdownString += `### 标题: <a href="${item.detailUrl}" target="_blank">${item.title}</a>\n\n`;
+                                }
+
+                                // 问题描述
+                                if (item.questions && item.questions.length > 0) {
+                                    markdownString += `> ###  问题描述：\n`
+                                    markdownString += `>${item.questions}\n\n`;
+                                }
+
+                                // 如果问题补充存在，就显示
+                                if (item.questionsAdditionalInfo && item.questionsAdditionalInfo.length > 0) {
+                                    markdownString += `> ###  问题补充描述：\n`
+                                    markdownString += `> ${item.questionsAdditionalInfo}\n\n`;
+                                }
+
+                                // 处理问题图片
+                                if (item.questionsPicture && item.questionsPicture.length > 0) {
+
+                                    let questionsPicture = 1;
+
+                                    item.questionsPicture.forEach((picUrl: any) => {
+                                        // 添加链接前缀，创建Markdown格式图片链接
+                                        const imageUrl = `https://www.ad.siemens.com.cn${picUrl}`;
+
+                                        // 生成Markdown格式的图片
+                                        markdownString += `>  <a href="${imageUrl}" target="_blank">问题图片${questionsPicture}:</a>\n\n`
+                                        markdownString += `> <img src="${imageUrl}" alt="问题图片${questionsPicture}" width="400">\n\n`;
+                                        questionsPicture++;
+                                    });
+                                }
+                                // 回答
+                                if (item.answer && item.answer.length > 0) {
+                                    markdownString += `> ###  回答：\n`
+                                    markdownString += `>${item.answer}\n\n`;
+                                }
+
+                                // 处理回答图片
+                                if (item.answerPicture && item.answerPicture.length > 0) {
+                                    let answerPicture = 1;
+
+                                    item.answerPicture.forEach((picUrl: any) => {
+                                        // 添加链接前缀，创建 Markdown 格式图片链接
+                                        const imageUrl = `https://www.ad.siemens.com.cn${picUrl}`;
+
+
+                                        // 生成Markdown格式的图片
+                                        markdownString += `>  <a href="${imageUrl}" target="_blank">回答图片${answerPicture}:</a>\n\n`
+                                        markdownString += `> <img src="${imageUrl}" alt="回答图片${answerPicture}" width="400">\n\n`;
+                                        answerPicture++;
+
+                                    });
+                                }
+
+                                // 文档详情描述
+                                if (item.introduce && item.introduce.length > 0) {
+                                    markdownString += `> ###  文档详情：\n`
+                                    markdownString += `> ${item.introduce}\n\n`;
+                                }
+
+                                // gpt回复
+                                if (item.gptresult && item.gptresult.length > 0) {
+                                    markdownString += `${item.gptresult}\n\n`;
+                                }
+
+                            }
+                            // 如果有其他字段需要在 Markdown 中展示，可以在这里继续追加
+                        });
+
+
                         const oldmew = old.slice(0, old.length - 1)
-                        const newValue = [...oldmew, { type: 0, value: markdown }]
+                        const newValue = [...oldmew, { type: 0, value: markdownString }]
+
                         return newValue
                     })
                 }, 1000)
@@ -53,9 +162,13 @@ const Home: React.FC = () => {
     }
 
 
-    const handleChange = (value: string, option: { value: string, label: string, msg: string }) => {
-        setItems([{ type: 0, value: option.msg }])
-        setmessageType(value)
+    const handleChange = (value: string, option: { value: string, label: string, msg: string } | { value: string, label: string, msg: string }[]) => {
+        if (Array.isArray(option)) {
+            // 如果是数组形式的参数，可以在这里处理
+        } else {
+            setItems([{ type: 0, value: option.msg }])
+            setmessageType(value)
+        }
     };
     useEffect(() => {
         if (userName === null) {
@@ -68,11 +181,20 @@ const Home: React.FC = () => {
 
 
     const setEvaluateHandler = async (behavior: string, index: number) => {
+        if (items.length === 3 && behavior === 'down') {
+            console.log('items.length: ', items.length);
+
+            setcurrentMessage(items[1].value);
+        }
         const res = await setEvaluate({
             chatId: uuidv4(),
             type: behavior,
             problemList: items.slice(1, index + 1),
         })
+        if (items.length === 3 && behavior === 'down') {
+            addMessage(); // 这里假设 addMessage 是你想调用的方法
+            setcurrentMessage("")
+        }
         if (res.data.code === 200) {
             message.success('反馈成功！');
         }
@@ -102,10 +224,11 @@ const Home: React.FC = () => {
     }, [currentMessage, messageType])
 
     const avatar = <Avatar style={{ backgroundColor: '#0070c0', }} icon={<UserOutlined />} />
-    const avatarAi = <Avatar style={{ backgroundColor: '#19c37d', }} icon={<RedditOutlined />} />
+    const avatarAi = <Avatar style={{ backgroundColor: '#19c37d', width: "35px", height: "35px" }} icon={<RedditOutlined />} />
 
 
     return (
+
         <div className="home">
             <div className='left'>2 / 5</div>
             <div className='right' ref={chatListRef}>
@@ -133,7 +256,13 @@ const Home: React.FC = () => {
                         items.map((item: { type: number, value: string }, index: number) => {
                             return <div className="item" style={{ background: item.type ? '' : 'rgb(247, 247, 248)' }} key={index}>
                                 <div className="solvemeg">
-                                    {item.type ? avatar : avatarAi} <span>{item.value === '-1' ? <LoadingOutlined /> : !item.type ? <Markdown>{item.value}</Markdown> : item.value}</span>
+                                    {item.type ? avatar : avatarAi}
+                                    <span>
+                                        {item.value === '-1' ? <LoadingOutlined /> : !item.type ? (
+                                            item.value && <Markdown rehypePlugins={[rehypeRaw,
+                                                rehypeReact]} components={renderers as Partial<Components>}>{item.value}</Markdown>
+                                        ) : item.value}
+                                    </span>
                                 </div>
                                 <div className="dianzhan">
                                     <div className="top">
