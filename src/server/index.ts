@@ -1,9 +1,15 @@
 import request from "./request";
 
 export const setMessage = (data: {
-  isFollowUp: boolean;
-  type: string;
-  value: string;
+  isFollowUp?: boolean;
+  type?: string;
+  value?: string;
+  systemMessage?: string;
+  maxTokens?: string;
+  temperature?: string;
+  topP?: string;
+  frequencyPenalty?: string;
+  presencePenalty?: string;
   // words: string[];
 }) =>
   request({

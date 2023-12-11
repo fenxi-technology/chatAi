@@ -1,6 +1,6 @@
 // 导入userStroe
 import { LoadingOutlined, RedditOutlined, UserOutlined } from '@ant-design/icons'
-import { Button, Input, message, Space, Avatar, Select, } from 'antd'
+import { Button, Input, message, Space, Avatar, Select, Checkbox, Form } from 'antd'
 import { SetStateAction, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { setEvaluate, setMessage } from '../server'
@@ -36,6 +36,10 @@ const Home: React.FC = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [items, setItems] = useState<{ type: number, value: string | any }[]>([])
     const [messageType, setmessageType] = useState('')
+    //侧边输入的值
+    const [iptValue, setiptValue] = useState({
+        systemMessage: "",
+    })
     //判断当前是满意还是不满意的回执
     const [flag, setflag] = useState<boolean>(false)
     const iptChange = (value: { target: { value: SetStateAction<string> } }) => {
@@ -50,8 +54,6 @@ const Home: React.FC = () => {
         console.log('messageType: ', messageType);
         console.log('currentMessage: ', currentMessage);
         if (messageType !== '' && currentMessage.trim() !== '') {
-
-
 
             console.log("开始请求");
             // 判断是第一次提问还是追问
@@ -223,14 +225,187 @@ const Home: React.FC = () => {
         }
     }, [currentMessage, messageType])
 
+
+    type FieldType = {
+        systemMessage?: string;
+        maxTokens?: string;
+        temperature?: string;
+        topP?: string;
+        frequencyPenalty?: string;
+        presencePenalty?: string;
+    };
+
+    const onFinish = async (values: FieldType) => {
+        console.log('Success:', values);
+        const res = await setMessage({
+            ...values,
+            type: "4",
+        })
+        if (res.data.code === 200) {
+            setTimeout(() => {
+                if (items.length > 4) {
+                    setcurrentMessage('')
+                }
+                // setcurrentMessage('')
+                setItems((old) => {
+
+                    const parsedData = res.data.data
+
+                    let markdownString = '';
+
+
+                    parsedData.forEach((item: any) => {
+                        if (item != null) {
+                            // 标题
+                            if (item.title && item.title.length > 0) {
+                                markdownString += `以下是为您推荐的，与您问题相关性最高的回答: \n`
+                                markdownString += `### 标题: <a href="${item.detailUrl}" target="_blank">${item.title}</a>\n\n`;
+                            }
+
+                            // 问题描述
+                            if (item.questions && item.questions.length > 0) {
+                                markdownString += `> ###  问题描述：\n`
+                                markdownString += `>${item.questions}\n\n`;
+                            }
+
+                            // 如果问题补充存在，就显示
+                            if (item.questionsAdditionalInfo && item.questionsAdditionalInfo.length > 0) {
+                                markdownString += `> ###  问题补充描述：\n`
+                                markdownString += `> ${item.questionsAdditionalInfo}\n\n`;
+                            }
+
+                            // 处理问题图片
+                            if (item.questionsPicture && item.questionsPicture.length > 0) {
+
+                                let questionsPicture = 1;
+
+                                item.questionsPicture.forEach((picUrl: any) => {
+                                    // 添加链接前缀，创建Markdown格式图片链接
+                                    const imageUrl = `https://www.ad.siemens.com.cn${picUrl}`;
+
+                                    // 生成Markdown格式的图片
+                                    markdownString += `>  <a href="${imageUrl}" target="_blank">问题图片${questionsPicture}:</a>\n\n`
+                                    markdownString += `> <img src="${imageUrl}" alt="问题图片${questionsPicture}" width="400">\n\n`;
+                                    questionsPicture++;
+                                });
+                            }
+                            // 回答
+                            if (item.answer && item.answer.length > 0) {
+                                markdownString += `> ###  回答：\n`
+                                markdownString += `>${item.answer}\n\n`;
+                            }
+
+                            // 处理回答图片
+                            if (item.answerPicture && item.answerPicture.length > 0) {
+                                let answerPicture = 1;
+
+                                item.answerPicture.forEach((picUrl: any) => {
+                                    // 添加链接前缀，创建 Markdown 格式图片链接
+                                    const imageUrl = `https://www.ad.siemens.com.cn${picUrl}`;
+
+
+                                    // 生成Markdown格式的图片
+                                    markdownString += `>  <a href="${imageUrl}" target="_blank">回答图片${answerPicture}:</a>\n\n`
+                                    markdownString += `> <img src="${imageUrl}" alt="回答图片${answerPicture}" width="400">\n\n`;
+                                    answerPicture++;
+
+                                });
+                            }
+
+                            // 文档详情描述
+                            if (item.introduce && item.introduce.length > 0) {
+                                markdownString += `> ###  文档详情：\n`
+                                markdownString += `> ${item.introduce}\n\n`;
+                            }
+
+                            // gpt回复
+                            if (item.gptresult && item.gptresult.length > 0) {
+                                markdownString += `${item.gptresult}\n\n`;
+                            }
+
+                        }
+                        // 如果有其他字段需要在 Markdown 中展示，可以在这里继续追加
+                    });
+
+
+                    const oldmew = old.slice(0, old.length - 1)
+                    const newValue = [...oldmew, { type: 0, value: markdownString }]
+
+                    return newValue
+                })
+            }, 1000)
+        }
+    };
+
+
+
     const avatar = <Avatar style={{ backgroundColor: '#0070c0', }} icon={<UserOutlined />} />
     const avatarAi = <Avatar style={{ backgroundColor: '#19c37d', width: "35px", height: "35px" }} icon={<RedditOutlined />} />
 
 
     return (
-
         <div className="home">
-            <div className='left'>2 / 5</div>
+            <div className='left' style={{ padding: "10px" }}>
+                <Form
+                    layout="vertical"
+                    name="basic"
+                    labelCol={{ span: 24 }}
+                    wrapperCol={{ span: 24 }}
+                    initialValues={{ remember: true }}
+                    onFinish={onFinish}
+                    autoComplete="off"
+                >
+                    <Form.Item<FieldType>
+                        label="系统信息"
+                        name="systemMessage"
+                        rules={[{ required: true, message: 'Please input your systemMessage!' }]}
+                    >
+                        <Input.TextArea />
+                    </Form.Item>
+                    <Form.Item<FieldType>
+                        label="最大响应数"
+                        name="maxTokens"
+                        rules={[{ required: true, message: 'Please input your maxTokens!' }]}
+                    >
+                        <Input />
+                    </Form.Item>
+                    <Form.Item<FieldType>
+                        label="温度"
+                        name="temperature"
+                        rules={[{ required: true, message: 'Please input your temperature!' }]}
+                    >
+                        <Input />
+                    </Form.Item>
+                    <Form.Item<FieldType>
+                        label="顶部 P "
+                        name="topP"
+                        rules={[{ required: true, message: 'Please input your topP!' }]}
+                    >
+                        <Input />
+                    </Form.Item>
+                    <Form.Item<FieldType>
+                        label="频率损失"
+                        name="frequencyPenalty"
+                        rules={[{ required: true, message: 'Please input your frequencyPenalty!' }]}
+                    >
+                        <Input />
+                    </Form.Item>
+                    <Form.Item<FieldType>
+                        label="状态惩罚"
+                        name="presencePenalty"
+                        rules={[{ required: true, message: 'Please input your presencePenalty!' }]}
+                    >
+                        <Input />
+                    </Form.Item>
+
+
+                    <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+                        <Button type="primary" htmlType="submit">
+                            提交
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </div>
             <div className='right' ref={chatListRef}>
                 <div className="inputMsg" >
                     <Space.Compact style={{ width: '100%' }}>
