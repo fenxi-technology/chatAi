@@ -1,9 +1,10 @@
 // 导入userStroe
 import { LoadingOutlined, RedditOutlined, UserOutlined } from '@ant-design/icons'
-import { Button, Input, message, Space, Avatar, Select, Checkbox, Form } from 'antd'
+import { Button, Input, message, Space, Avatar, Select, } from 'antd'
 import { SetStateAction, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { setEvaluate, setMessage } from '../server'
+import { setEvaluate, setMessage, } from '../server'
+// import { setEvaluate, setMessage, setClearChat } from '../server'
 import Markdown, { Components } from 'react-markdown'
 import { v4 as uuidv4 } from 'uuid';
 
@@ -31,15 +32,16 @@ const renderers = {
 const Home: React.FC = () => {
     const navigate = useNavigate()
     const userName = localStorage.getItem('userName')
+    // const [isClear, setIsClear] = useState(false);
+    // console.log('isClear: ', isClear);
     const [currentMessage, setcurrentMessage] = useState('')
+
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [items, setItems] = useState<{ type: number, value: string | any }[]>([])
     const [messageType, setmessageType] = useState('')
     //侧边输入的值
-    const [iptValue, setiptValue] = useState({
-        systemMessage: "",
-    })
+
     //判断当前是满意还是不满意的回执
     const [flag, setflag] = useState<boolean>(false)
     const iptChange = (value: { target: { value: SetStateAction<string> } }) => {
@@ -51,8 +53,7 @@ const Home: React.FC = () => {
 
 
     const addMessage = async () => {
-        console.log('messageType: ', messageType);
-        console.log('currentMessage: ', currentMessage);
+
         if (messageType !== '' && currentMessage.trim() !== '') {
 
             console.log("开始请求");
@@ -82,8 +83,8 @@ const Home: React.FC = () => {
                         parsedData.forEach((item: any) => {
                             if (item != null) {
                                 // 标题
+                                markdownString += `以下是为您推荐的，与您问题相关性最高的回答: \n`
                                 if (item.title && item.title.length > 0) {
-                                    markdownString += `以下是为您推荐的，与您问题相关性最高的回答: \n`
                                     markdownString += `### 标题: <a href="${item.detailUrl}" target="_blank">${item.title}</a>\n\n`;
                                 }
 
@@ -226,116 +227,127 @@ const Home: React.FC = () => {
     }, [currentMessage, messageType])
 
 
-    type FieldType = {
-        systemMessage?: string;
-        maxTokens?: string;
-        temperature?: string;
-        topP?: string;
-        frequencyPenalty?: string;
-        presencePenalty?: string;
-    };
+    // type FieldType = {
+    //     systemMessage?: string;
+    //     userMessage?: string,
+    //     assistantMessage?: string,
+    //     Message?: string;
+    //     maxTokens?: string;
+    //     temperature?: string;
+    //     topP?: string;
+    //     frequencyPenalty?: string;
+    //     presencePenalty?: string;
 
-    const onFinish = async (values: FieldType) => {
-        console.log('Success:', values);
-        const res = await setMessage({
-            ...values,
-            type: "4",
-        })
-        if (res.data.code === 200) {
-            setTimeout(() => {
-                if (items.length > 4) {
-                    setcurrentMessage('')
-                }
-                // setcurrentMessage('')
-                setItems((old) => {
+    // };
 
-                    const parsedData = res.data.data
+    // const onFinish = async (values: FieldType) => {
+    //     console.log('Success:', values);
+    //     const res = await setMessage({
+    //         ...values,
+    //         type: "4",
+    //         isFollowUp: false
+    //     })
+    //     if (res.data.code === 200) {
+    //         setTimeout(() => {
+    //             if (items.length > 4) {
+    //                 setcurrentMessage('')
+    //             }
+    //             // setcurrentMessage('')
+    //             setItems((old) => {
 
-                    let markdownString = '';
+    //                 const parsedData = res.data.data
 
-
-                    parsedData.forEach((item: any) => {
-                        if (item != null) {
-                            // 标题
-                            if (item.title && item.title.length > 0) {
-                                markdownString += `以下是为您推荐的，与您问题相关性最高的回答: \n`
-                                markdownString += `### 标题: <a href="${item.detailUrl}" target="_blank">${item.title}</a>\n\n`;
-                            }
-
-                            // 问题描述
-                            if (item.questions && item.questions.length > 0) {
-                                markdownString += `> ###  问题描述：\n`
-                                markdownString += `>${item.questions}\n\n`;
-                            }
-
-                            // 如果问题补充存在，就显示
-                            if (item.questionsAdditionalInfo && item.questionsAdditionalInfo.length > 0) {
-                                markdownString += `> ###  问题补充描述：\n`
-                                markdownString += `> ${item.questionsAdditionalInfo}\n\n`;
-                            }
-
-                            // 处理问题图片
-                            if (item.questionsPicture && item.questionsPicture.length > 0) {
-
-                                let questionsPicture = 1;
-
-                                item.questionsPicture.forEach((picUrl: any) => {
-                                    // 添加链接前缀，创建Markdown格式图片链接
-                                    const imageUrl = `https://www.ad.siemens.com.cn${picUrl}`;
-
-                                    // 生成Markdown格式的图片
-                                    markdownString += `>  <a href="${imageUrl}" target="_blank">问题图片${questionsPicture}:</a>\n\n`
-                                    markdownString += `> <img src="${imageUrl}" alt="问题图片${questionsPicture}" width="400">\n\n`;
-                                    questionsPicture++;
-                                });
-                            }
-                            // 回答
-                            if (item.answer && item.answer.length > 0) {
-                                markdownString += `> ###  回答：\n`
-                                markdownString += `>${item.answer}\n\n`;
-                            }
-
-                            // 处理回答图片
-                            if (item.answerPicture && item.answerPicture.length > 0) {
-                                let answerPicture = 1;
-
-                                item.answerPicture.forEach((picUrl: any) => {
-                                    // 添加链接前缀，创建 Markdown 格式图片链接
-                                    const imageUrl = `https://www.ad.siemens.com.cn${picUrl}`;
+    //                 let markdownString = '';
 
 
-                                    // 生成Markdown格式的图片
-                                    markdownString += `>  <a href="${imageUrl}" target="_blank">回答图片${answerPicture}:</a>\n\n`
-                                    markdownString += `> <img src="${imageUrl}" alt="回答图片${answerPicture}" width="400">\n\n`;
-                                    answerPicture++;
+    //                 parsedData.forEach((item: any) => {
+    //                     if (item != null) {
+    //                         // 标题
+    //                         if (item.title && item.title.length > 0) {
+    //                             markdownString += `以下是为您推荐的，与您问题相关性最高的回答: \n`
+    //                             markdownString += `### 标题: <a href="${item.detailUrl}" target="_blank">${item.title}</a>\n\n`;
+    //                         }
 
-                                });
-                            }
+    //                         // 问题描述
+    //                         if (item.questions && item.questions.length > 0) {
+    //                             markdownString += `> ###  问题描述：\n`
+    //                             markdownString += `>${item.questions}\n\n`;
+    //                         }
 
-                            // 文档详情描述
-                            if (item.introduce && item.introduce.length > 0) {
-                                markdownString += `> ###  文档详情：\n`
-                                markdownString += `> ${item.introduce}\n\n`;
-                            }
+    //                         // 如果问题补充存在，就显示
+    //                         if (item.questionsAdditionalInfo && item.questionsAdditionalInfo.length > 0) {
+    //                             markdownString += `> ###  问题补充描述：\n`
+    //                             markdownString += `> ${item.questionsAdditionalInfo}\n\n`;
+    //                         }
 
-                            // gpt回复
-                            if (item.gptresult && item.gptresult.length > 0) {
-                                markdownString += `${item.gptresult}\n\n`;
-                            }
+    //                         // 处理问题图片
+    //                         if (item.questionsPicture && item.questionsPicture.length > 0) {
 
-                        }
-                        // 如果有其他字段需要在 Markdown 中展示，可以在这里继续追加
-                    });
+    //                             let questionsPicture = 1;
+
+    //                             item.questionsPicture.forEach((picUrl: any) => {
+    //                                 // 添加链接前缀，创建Markdown格式图片链接
+    //                                 const imageUrl = `https://www.ad.siemens.com.cn${picUrl}`;
+
+    //                                 // 生成Markdown格式的图片
+    //                                 markdownString += `>  <a href="${imageUrl}" target="_blank">问题图片${questionsPicture}:</a>\n\n`
+    //                                 markdownString += `> <img src="${imageUrl}" alt="问题图片${questionsPicture}" width="400">\n\n`;
+    //                                 questionsPicture++;
+    //                             });
+    //                         }
+    //                         // 回答
+    //                         if (item.answer && item.answer.length > 0) {
+    //                             markdownString += `> ###  回答：\n`
+    //                             markdownString += `>${item.answer}\n\n`;
+    //                         }
+
+    //                         // 处理回答图片
+    //                         if (item.answerPicture && item.answerPicture.length > 0) {
+    //                             let answerPicture = 1;
+
+    //                             item.answerPicture.forEach((picUrl: any) => {
+    //                                 // 添加链接前缀，创建 Markdown 格式图片链接
+    //                                 const imageUrl = `https://www.ad.siemens.com.cn${picUrl}`;
 
 
-                    const oldmew = old.slice(0, old.length - 1)
-                    const newValue = [...oldmew, { type: 0, value: markdownString }]
+    //                                 // 生成Markdown格式的图片
+    //                                 markdownString += `>  <a href="${imageUrl}" target="_blank">回答图片${answerPicture}:</a>\n\n`
+    //                                 markdownString += `> <img src="${imageUrl}" alt="回答图片${answerPicture}" width="400">\n\n`;
+    //                                 answerPicture++;
 
-                    return newValue
-                })
-            }, 1000)
-        }
-    };
+    //                             });
+    //                         }
+
+    //                         // 文档详情描述
+    //                         if (item.introduce && item.introduce.length > 0) {
+    //                             markdownString += `> ###  文档详情：\n`
+    //                             markdownString += `> ${item.introduce}\n\n`;
+    //                         }
+
+    //                         // gpt回复
+    //                         if (item.gptresult && item.gptresult.length > 0) {
+    //                             markdownString += `${item.gptresult}\n\n`;
+    //                         }
+
+    //                     }
+    //                     // 如果有其他字段需要在 Markdown 中展示，可以在这里继续追加
+    //                 });
+
+
+    //                 const oldmew = old.slice(0, old.length - 1)
+    //                 const newValue = [...oldmew, { type: 0, value: markdownString }]
+
+    //                 return newValue
+    //             })
+    //         }, 1000)
+    //     }
+    // };
+
+    // const handleNewChat = () => {
+    //     setIsClear(true);
+    //     setItems([])
+    //     setClearChat({ isClear: true });
+    // };
 
 
 
@@ -346,7 +358,7 @@ const Home: React.FC = () => {
     return (
         <div className="home">
             <div className='left' style={{ padding: "10px" }}>
-                <Form
+                {/* <Form
                     layout="vertical"
                     name="basic"
                     labelCol={{ span: 24 }}
@@ -358,10 +370,31 @@ const Home: React.FC = () => {
                     <Form.Item<FieldType>
                         label="系统信息"
                         name="systemMessage"
-                        rules={[{ required: true, message: 'Please input your systemMessage!' }]}
                     >
                         <Input.TextArea />
                     </Form.Item>
+
+                    <Form.Item<FieldType>
+                        label="用户提问信息例子"
+                        name="userMessage"
+                    >
+                        <Input.TextArea />
+                    </Form.Item>
+
+                    <Form.Item<FieldType>
+                        label="助手回答信息例子"
+                        name="assistantMessage"
+                    >
+                        <Input.TextArea />
+                    </Form.Item>
+
+                    <Form.Item<FieldType>
+                        label="提问"
+                        name="Message"
+                    >
+                        <Input.TextArea />
+                    </Form.Item>
+
                     <Form.Item<FieldType>
                         label="最大响应数"
                         name="maxTokens"
@@ -404,7 +437,13 @@ const Home: React.FC = () => {
                             提交
                         </Button>
                     </Form.Item>
-                </Form>
+
+                    <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+                        <Button type="primary" onClick={handleNewChat}>
+                            new chat
+                        </Button>
+                    </Form.Item>
+                </Form> */}
             </div>
             <div className='right' ref={chatListRef}>
                 <div className="inputMsg" >
