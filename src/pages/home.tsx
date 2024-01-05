@@ -83,7 +83,7 @@ const Home: React.FC = () => {
                         parsedData.forEach((item: any) => {
                             if (item != null) {
                                 // 标题
-                                markdownString += `以下是为您推荐的，与您问题相关性最高的回答: \n`
+                                markdownString += `以下是为您推荐的，与您问题相关性较高的回答: \n`
                                 if (item.title && item.title.length > 0) {
                                     markdownString += `### 标题: <a href="${item.detailUrl}" target="_blank">${item.title}</a>\n\n`;
                                 }
@@ -138,10 +138,10 @@ const Home: React.FC = () => {
                                     });
                                 }
 
-                                // 文档详情描述
-                                if (item.introduce && item.introduce.length > 0) {
-                                    markdownString += `> ###  文档详情：\n`
-                                    markdownString += `> ${item.introduce}\n\n`;
+                                // 文档信息描述
+                                if (item.description && item.description.length > 0) {
+                                    markdownString += `> ###  信息：\n`
+                                    markdownString += `> ${item.description}\n\n`;
                                 }
 
                                 // gpt回复
@@ -184,19 +184,18 @@ const Home: React.FC = () => {
 
 
     const setEvaluateHandler = async (behavior: string, index: number) => {
-        if (items.length === 3 && behavior === 'down') {
-            console.log('items.length: ', items.length);
 
-            setcurrentMessage(items[1].value);
-        }
+        // console.log('behavior: ', behavior);
         const res = await setEvaluate({
+            messageName: items[(index - 1)].value,
+            messageType,
             chatId: uuidv4(),
             type: behavior,
             problemList: items.slice(1, index + 1),
         })
-        if (items.length === 3 && behavior === 'down') {
+        if (behavior === 'down') {
             addMessage(); // 这里假设 addMessage 是你想调用的方法
-            setcurrentMessage("")
+            setcurrentMessage(items[(index - 1)].value)
         }
         if (res.data.code === 200) {
             message.success('反馈成功！');
@@ -459,7 +458,7 @@ const Home: React.FC = () => {
                             ]}
                         />
                         <Input placeholder="请输入您的问题" onChange={iptChange} value={currentMessage} />
-                        <Button disabled={!flag} type="primary" onClick={addMessage} >Submit</Button>
+                        <Button disabled={!flag} type="primary" onClick={addMessage} >提交</Button>
                     </Space.Compact>
 
                 </div>
