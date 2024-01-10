@@ -82,7 +82,7 @@ const Home: React.FC = () => {
 
                         parsedData.forEach((item: any) => {
                             if (item != null) {
-                                // 标题
+
 
                                 if (item.title && item.title.length > 0) {
                                     markdownString += `以下是为您推荐的，比较符合您需求的文档: \n`
@@ -148,6 +148,16 @@ const Home: React.FC = () => {
                                 // 文档下载类gpt回复
                                 if (item.documentResult && item.documentResult.length > 0) {
                                     markdownString += item.documentResult;
+                                }
+
+                                // 故障代码类gpt回复
+                                if (item.faultResult && item.faultResult.length > 0) {
+                                    markdownString += item.faultResult;
+                                }
+
+                                // 直接问询gpt回复
+                                if (item.gptresult && item.gptresult.length > 0) {
+                                    markdownString += item.gptresult;
                                 }
 
                             }
