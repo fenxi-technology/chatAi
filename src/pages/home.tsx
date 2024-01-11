@@ -463,9 +463,9 @@ const Home: React.FC = () => {
                             style={{ width: 220 }}
                             onChange={handleChange}
                             options={[
-                                { value: '1', label: '文档下载类', msg: '请输入您要下载的文档', },
-                                { value: '2', label: '故障代码问询类', msg: '请输入设备类型和错误代码并以冒号连接！如:西门子s7-200 Smart:0086' },
-                                { value: '3', label: '问题回答类', msg: '请输入您的问题' },
+                                { value: '1', label: '文档下载类', msg: '请输入您要下载的文档。回复需要时间，请耐心等待', },
+                                { value: '2', label: '故障代码问询类', msg: '请输入设备类型和错误代码并以冒号连接！如:S7-200 Smart:0086。回复需要时间，请耐心等待' },
+                                { value: '3', label: '问题回答类', msg: '请输入您的问题,回复需要时间，请耐心等待。' },
                             ]}
                         />
                         <Input placeholder="请输入您的问题" onChange={iptChange} value={currentMessage} />
