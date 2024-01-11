@@ -146,17 +146,18 @@ const Home: React.FC = () => {
                                 }
 
                                 // 文档下载类gpt回复
-                                if (item.documentResult && item.documentResult.length > 0) {
-                                    markdownString += item.documentResult;
+                                if (item.documentResult) {
+                                    console.log('item.documentResult: ', item.documentResult);
+                                    markdownString += `${item.documentResult}`;
                                 }
 
                                 // 故障代码类gpt回复
-                                if (item.faultResult && item.faultResult.length > 0) {
+                                if (item.faultResult) {
                                     markdownString += item.faultResult;
                                 }
 
                                 // 直接问询gpt回复
-                                if (item.gptresult && item.gptresult.length > 0) {
+                                if (item.gptresult) {
                                     markdownString += item.gptresult;
                                 }
 
@@ -463,7 +464,7 @@ const Home: React.FC = () => {
                             style={{ width: 220 }}
                             onChange={handleChange}
                             options={[
-                                { value: '1', label: '文档下载类', msg: '请输入您要下载的文档。回复需要时间，请耐心等待', },
+                                { value: '1', label: '文档下载类', msg: '请输入您要下载的文档对应的设备和文档的类型。回复需要时间，请耐心等待', },
                                 { value: '2', label: '故障代码问询类', msg: '请输入设备类型和错误代码并以冒号连接！如:S7-200 Smart:0086。回复需要时间，请耐心等待' },
                                 { value: '3', label: '问题回答类', msg: '请输入您的问题,回复需要时间，请耐心等待。' },
                             ]}
