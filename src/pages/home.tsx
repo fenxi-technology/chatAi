@@ -53,127 +53,140 @@ const Home: React.FC = () => {
 
 
     const addMessage = async () => {
+        try {
+            if (messageType !== '' && currentMessage.trim() !== '') {
 
-        if (messageType !== '' && currentMessage.trim() !== '') {
+                console.log("开始请求");
+                // 判断是第一次提问还是追问
+                const isFollowUp = items.length > 1
 
-            console.log("开始请求");
-            // 判断是第一次提问还是追问
-            const isFollowUp = items.length > 1
+                setItems([...items, { type: 1, value: currentMessage }, { type: 0, value: '-1' }])
 
-            setItems([...items, { type: 1, value: currentMessage }, { type: 0, value: '-1' }])
+                const res = await setMessage({
+                    isFollowUp: isFollowUp,
+                    type: messageType,
+                    value: currentMessage,
+                })
+                if (res.data.code === 200) {
+                    setTimeout(() => {
+                        if (items.length > 4) {
+                            setcurrentMessage('')
+                        }
+                        // setcurrentMessage('')
+                        setItems((old) => {
 
-            const res = await setMessage({
-                isFollowUp: isFollowUp,
-                type: messageType,
-                value: currentMessage,
-            })
-            if (res.data.code === 200) {
-                setTimeout(() => {
-                    if (items.length > 4) {
-                        setcurrentMessage('')
-                    }
-                    // setcurrentMessage('')
-                    setItems((old) => {
+                            const parsedData = res.data.data
 
-                        const parsedData = res.data.data
-
-                        let markdownString = '';
-
-
-                        parsedData.forEach((item: any) => {
-                            if (item != null) {
+                            let markdownString = '';
 
 
-                                if (item.title && item.title.length > 0) {
-                                    markdownString += `以下是为您推荐的，比较符合您需求的文档: \n`
-                                    markdownString += `### 标题: <a href="${item.detailUrl}" target="_blank">${item.title}</a>\n\n`;
+                            parsedData.forEach((item: any) => {
+                                if (item != null) {
+
+
+                                    if (item.title && item.title.length > 0) {
+                                        markdownString += `以下是为您推荐的，比较符合您需求的文档: \n`
+                                        markdownString += `### 标题: <a href="${item.detailUrl}" target="_blank">${item.title}</a>\n\n`;
+                                    }
+
+                                    // 问题描述
+                                    if (item.questions && item.questions.length > 0) {
+                                        markdownString += `> ###  问题描述：\n`
+                                        markdownString += `>${item.questions}\n\n`;
+                                    }
+
+                                    // 如果问题补充存在，就显示
+                                    if (item.questionsAdditionalInfo && item.questionsAdditionalInfo.length > 0) {
+                                        markdownString += `> ###  问题补充描述：\n`
+                                        markdownString += `> ${item.questionsAdditionalInfo}\n\n`;
+                                    }
+
+                                    // 处理问题图片
+                                    if (item.questionsPicture && item.questionsPicture.length > 0) {
+
+                                        let questionsPicture = 1;
+
+                                        item.questionsPicture.forEach((picUrl: any) => {
+                                            // 添加链接前缀，创建Markdown格式图片链接
+                                            const imageUrl = `https://www.ad.siemens.com.cn${picUrl}`;
+
+                                            // 生成Markdown格式的图片
+                                            markdownString += `>  <a href="${imageUrl}" target="_blank">问题图片${questionsPicture}:</a>\n\n`
+                                            markdownString += `> <img src="${imageUrl}" alt="问题图片${questionsPicture}" width="400">\n\n`;
+                                            questionsPicture++;
+                                        });
+                                    }
+                                    // 回答
+                                    if (item.answer && item.answer.length > 0) {
+                                        markdownString += `> ###  回答：\n`
+                                        markdownString += `>${item.answer}\n\n`;
+                                    }
+
+                                    // 处理回答图片
+                                    if (item.answerPicture && item.answerPicture.length > 0) {
+                                        let answerPicture = 1;
+
+                                        item.answerPicture.forEach((picUrl: any) => {
+                                            // 添加链接前缀，创建 Markdown 格式图片链接
+                                            const imageUrl = `https://www.ad.siemens.com.cn${picUrl}`;
+
+
+                                            // 生成Markdown格式的图片
+                                            markdownString += `>  <a href="${imageUrl}" target="_blank">回答图片${answerPicture}:</a>\n\n`
+                                            markdownString += `> <img src="${imageUrl}" alt="回答图片${answerPicture}" width="400">\n\n`;
+                                            answerPicture++;
+
+                                        });
+                                    }
+
+                                    // 信息描述
+                                    if (item.description && item.description.length > 0) {
+                                        markdownString += `> ###  信息：\n`
+                                        markdownString += `> ${item.description}\n\n`;
+                                    }
+
+                                    // 文档下载类gpt回复
+                                    if (item.documentResult) {
+                                        console.log('item.documentResult: ', item.documentResult);
+                                        markdownString += `${item.documentResult}`;
+                                    }
+
+                                    // 故障代码类gpt回复
+                                    if (item.faultResult) {
+                                        markdownString += item.faultResult;
+                                    }
+
+                                    // 直接问询gpt回复
+                                    if (item.gptresult) {
+                                        markdownString += item.gptresult;
+                                    }
+
                                 }
-
-                                // 问题描述
-                                if (item.questions && item.questions.length > 0) {
-                                    markdownString += `> ###  问题描述：\n`
-                                    markdownString += `>${item.questions}\n\n`;
-                                }
-
-                                // 如果问题补充存在，就显示
-                                if (item.questionsAdditionalInfo && item.questionsAdditionalInfo.length > 0) {
-                                    markdownString += `> ###  问题补充描述：\n`
-                                    markdownString += `> ${item.questionsAdditionalInfo}\n\n`;
-                                }
-
-                                // 处理问题图片
-                                if (item.questionsPicture && item.questionsPicture.length > 0) {
-
-                                    let questionsPicture = 1;
-
-                                    item.questionsPicture.forEach((picUrl: any) => {
-                                        // 添加链接前缀，创建Markdown格式图片链接
-                                        const imageUrl = `https://www.ad.siemens.com.cn${picUrl}`;
-
-                                        // 生成Markdown格式的图片
-                                        markdownString += `>  <a href="${imageUrl}" target="_blank">问题图片${questionsPicture}:</a>\n\n`
-                                        markdownString += `> <img src="${imageUrl}" alt="问题图片${questionsPicture}" width="400">\n\n`;
-                                        questionsPicture++;
-                                    });
-                                }
-                                // 回答
-                                if (item.answer && item.answer.length > 0) {
-                                    markdownString += `> ###  回答：\n`
-                                    markdownString += `>${item.answer}\n\n`;
-                                }
-
-                                // 处理回答图片
-                                if (item.answerPicture && item.answerPicture.length > 0) {
-                                    let answerPicture = 1;
-
-                                    item.answerPicture.forEach((picUrl: any) => {
-                                        // 添加链接前缀，创建 Markdown 格式图片链接
-                                        const imageUrl = `https://www.ad.siemens.com.cn${picUrl}`;
+                                // 如果有其他字段需要在 Markdown 中展示，可以在这里继续追加
+                            });
 
 
-                                        // 生成Markdown格式的图片
-                                        markdownString += `>  <a href="${imageUrl}" target="_blank">回答图片${answerPicture}:</a>\n\n`
-                                        markdownString += `> <img src="${imageUrl}" alt="回答图片${answerPicture}" width="400">\n\n`;
-                                        answerPicture++;
+                            const oldmew = old.slice(0, old.length - 1)
+                            const newValue = [...oldmew, { type: 0, value: markdownString }]
 
-                                    });
-                                }
-
-                                // 信息描述
-                                if (item.description && item.description.length > 0) {
-                                    markdownString += `> ###  信息：\n`
-                                    markdownString += `> ${item.description}\n\n`;
-                                }
-
-                                // 文档下载类gpt回复
-                                if (item.documentResult) {
-                                    console.log('item.documentResult: ', item.documentResult);
-                                    markdownString += `${item.documentResult}`;
-                                }
-
-                                // 故障代码类gpt回复
-                                if (item.faultResult) {
-                                    markdownString += item.faultResult;
-                                }
-
-                                // 直接问询gpt回复
-                                if (item.gptresult) {
-                                    markdownString += item.gptresult;
-                                }
-
-                            }
-                            // 如果有其他字段需要在 Markdown 中展示，可以在这里继续追加
-                        });
-
-
-                        const oldmew = old.slice(0, old.length - 1)
-                        const newValue = [...oldmew, { type: 0, value: markdownString }]
-
-                        return newValue
-                    })
-                }, 1000)
+                            return newValue
+                        })
+                    }, 1000)
+                }
             }
+        } catch (error: any) {
+            console.log('error: ', error.response.data.code);
+            setItems((old) => {
+
+                const markdownString = '对不起，我是VxE虚拟工程师，只能提供有关西门子设备的帮助。请检查输入的内容并重新提问';
+
+                const oldmew = old.slice(0, old.length - 1)
+                const newValue = [...oldmew, { type: 0, value: markdownString }]
+
+                return newValue
+            })
         }
+
     }
 
 
