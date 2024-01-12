@@ -1,6 +1,6 @@
 // 导入userStroe
 import { LoadingOutlined, RedditOutlined, UserOutlined } from '@ant-design/icons'
-import { Button, Input, message, Space, Avatar, Select, } from 'antd'
+import { Button, Input, message, Space, Avatar, Select, FloatButton } from 'antd'
 import { SetStateAction, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { setEvaluate, setMessage, } from '../server'
@@ -186,7 +186,6 @@ const Home: React.FC = () => {
                 return newValue
             })
         }
-
     }
 
 
@@ -231,6 +230,7 @@ const Home: React.FC = () => {
         const current: { scrollTop: unknown, scrollHeight: unknown } = chatListRef.current!
         //scrollHeight是页面的高度
         current.scrollTop = current.scrollHeight
+        console.log('current.scrollHeight: ', current.scrollHeight);
     }, [items])
 
     useEffect(() => {
@@ -381,7 +381,7 @@ const Home: React.FC = () => {
 
     return (
         <div className="home">
-            <div className='left' style={{ padding: "10px" }}>
+            <div className='left'>
                 {/* <Form
                     layout="vertical"
                     name="basic"
@@ -469,7 +469,7 @@ const Home: React.FC = () => {
                     </Form.Item>
                 </Form> */}
             </div>
-            <div className='right' ref={chatListRef}>
+            <div className='right' >
                 <div className="inputMsg" >
                     <Space.Compact style={{ width: '100%' }}>
                         <Select
@@ -489,7 +489,7 @@ const Home: React.FC = () => {
                 </div>
                 {/* <Markdown>{markdown}</Markdown> */}
 
-                <div className="items">
+                <div className="items" ref={chatListRef}>
                     {
                         items.map((item: { type: number, value: string }, index: number) => {
                             return <div className="item" style={{ background: item.type ? '' : 'rgb(247, 247, 248)' }} key={index}>
@@ -519,6 +519,7 @@ const Home: React.FC = () => {
                         })
                     }
                 </div>
+                <FloatButton.BackTop visibilityHeight={0} onClick={() => (chatListRef.current as any).scrollTop = 0} />
             </div>
         </div >
     )
