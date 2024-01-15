@@ -68,10 +68,9 @@ const Home: React.FC = () => {
                     value: currentMessage,
                 })
                 if (res.data.code === 200) {
+
                     setTimeout(() => {
-                        if (items.length > 4) {
-                            setcurrentMessage('')
-                        }
+                        setcurrentMessage('')
                         // setcurrentMessage('')
                         setItems((old) => {
 
@@ -176,6 +175,7 @@ const Home: React.FC = () => {
             }
         } catch (error: any) {
             console.log('error: ', error.response.data.code);
+            setcurrentMessage('')
             setItems((old) => {
 
                 const markdownString = '对不起，我是VxE虚拟工程师，只能提供有关西门子设备的帮助。请检查输入的内容并重新提问';
