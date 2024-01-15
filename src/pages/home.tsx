@@ -376,7 +376,7 @@ const Home: React.FC = () => {
 
 
     const avatar = <Avatar style={{ backgroundColor: '#0070c0', }} icon={<UserOutlined />} />
-    const avatarAi = <Avatar style={{ backgroundColor: '#19c37d', width: "35px", height: "35px" }} icon={<RedditOutlined />} />
+    const avatarAi = <Avatar style={{ backgroundColor: '#19c37d', width: "35px", height: "35px",marginTop:"10px" }} icon={<RedditOutlined />} />
 
 
     return (
