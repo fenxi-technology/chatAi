@@ -58,12 +58,12 @@
 // button:focus-visible {
 //   outline: 4px auto -webkit-focus-ring-color;
 // }
-body{
+body {
   padding: 0;
   margin: 0;
 }
 
-@media  screen and  (max-width: 980px)and(prefers-color-scheme: light) {
+@media screen and (max-width: 980px) and(prefers-color-scheme: light) {
   // :root {
   //   color: #213547;
   //   background-color: #ffffff;
@@ -74,30 +74,46 @@ body{
   button {
     background-color: #f9f9f9;
   }
-  .inputMsg{
+  .inputMsg {
     width: 100vw !important;
     left: 0 !important;
     bottom: opx !important;
-     transform: translateX(0) !important;
+    transform: translateX(0) !important;
 
-    .ant-space-compact{
+    .ant-space-compact {
       flex-direction: column;
       align-items: center;
-      >div{
+      > div {
         width: 90vw !important;
       }
-      >input{
+      > input {
         width: 90vw !important;
       }
-      >button{
+      > button {
         width: 90vw !important;
       }
     }
   }
-  .ant-float-btn{
+  .ant-float-btn {
     bottom: 170px;
   }
-  .items{
+  .items {
     height: calc(100vh - 200px) !important;
+  }
+
+  .inputMsg_right {
+    .ant-select {
+      .ant-select-selector {
+        border-start-end-radius: 0 !important;
+        border-end-end-radius: 0 !important;
+        border-start-start-radius: 0 !important;
+        border-end-start-radius: 0 !important;
+      }
+    }
+
+    .ant-btn {
+      right: 25px !important;
+      top: 76% !important;
+    }
   }
 }

@@ -1,5 +1,5 @@
 // 导入userStroe
-import { LoadingOutlined, RedditOutlined, UserOutlined } from '@ant-design/icons'
+import { LoadingOutlined, RedditOutlined, UserOutlined,ArrowUpOutlined } from '@ant-design/icons'
 import { Button, Input, message, Space, Avatar, Select, FloatButton } from 'antd'
 import { SetStateAction, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -482,8 +482,12 @@ const Home: React.FC = () => {
                                 { value: '3', label: '问题回答类', msg: '请输入您的问题,回复需要时间，请耐心等待。' },
                             ]}
                         />
+                        <div className="inputMsg_right">
                         <Input placeholder="请输入您的问题" onChange={iptChange} value={currentMessage} />
-                        <Button disabled={!flag} type="primary" onClick={addMessage} >提交</Button>
+
+                        <Button disabled={!flag} type="primary" onClick={addMessage} icon={<ArrowUpOutlined />} />
+                        </div>
+
                     </Space.Compact>
 
                 </div>

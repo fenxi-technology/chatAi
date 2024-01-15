@@ -40,10 +40,31 @@
       bottom: 40px;
       transform: translateX(-35%);
       z-index: 9;
-      > div {
-        > input {
-          height: 36px;
+      .inputMsg_right{
+        height: 36px;
+        width: 100%;
+        display: flex;
+        .ant-btn{
+          position: fixed;
+          right: 10px;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 28px;
+          height: 28px;
+          // background-color: #000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 99;
+          border-radius: 5px;
         }
+        :deep(.ant-input) {
+          height: 36px;
+          width: calc(100% -220px) !important;
+        }
+      }
+      > div {
+
         > button {
           height: 36px;
         }
