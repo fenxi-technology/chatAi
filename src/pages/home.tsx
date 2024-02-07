@@ -1,5 +1,5 @@
 // 导入userStroe
-import { LoadingOutlined, RedditOutlined, UserOutlined,ArrowUpOutlined } from '@ant-design/icons'
+import { LoadingOutlined, RedditOutlined, UserOutlined, ArrowUpOutlined } from '@ant-design/icons'
 import { Button, Input, message, Space, Avatar, Select, FloatButton } from 'antd'
 import { SetStateAction, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -101,8 +101,7 @@ const Home: React.FC = () => {
                                     }
 
                                     // 处理问题图片
-                                    if (item.questionsPicture && item.questionsPicture.length > 0) {
-
+                                    if (item.questionsPicture && Array.isArray(item.questionsPicture) && item.questionsPicture.length > 0) {
                                         let questionsPicture = 1;
 
                                         item.questionsPicture.forEach((picUrl: any) => {
@@ -115,6 +114,7 @@ const Home: React.FC = () => {
                                             questionsPicture++;
                                         });
                                     }
+
                                     // 回答
                                     if (item.answer && item.answer.length > 0) {
                                         markdownString += `> ###  回答：\n`
@@ -122,21 +122,21 @@ const Home: React.FC = () => {
                                     }
 
                                     // 处理回答图片
-                                    if (item.answerPicture && item.answerPicture.length > 0) {
+
+                                    if (item.answerPicture && Array.isArray(item.answerPicture) && item.answerPicture.length > 0) {
                                         let answerPicture = 1;
 
                                         item.answerPicture.forEach((picUrl: any) => {
-                                            // 添加链接前缀，创建 Markdown 格式图片链接
+                                            // 添加链接前缀，创建Markdown格式图片链接
                                             const imageUrl = `https://www.ad.siemens.com.cn${picUrl}`;
-
 
                                             // 生成Markdown格式的图片
                                             markdownString += `>  <a href="${imageUrl}" target="_blank">回答图片${answerPicture}:</a>\n\n`
                                             markdownString += `> <img src="${imageUrl}" alt="回答图片${answerPicture}" width="400">\n\n`;
                                             answerPicture++;
-
                                         });
                                     }
+
 
                                     // 信息描述
                                     if (item.description && item.description.length > 0) {
@@ -151,8 +151,14 @@ const Home: React.FC = () => {
                                     }
 
                                     // 故障代码类gpt回复
+                                    // pdftitle
+
                                     if (item.faultResult) {
                                         markdownString += item.faultResult;
+                                    }
+                                    if (item.pdftitle && item.pdftitle.length > 0) {
+                                        markdownString += `以下是为您推荐的设备故障代码的文档: \n`
+                                        markdownString += `### 故障涉及文档: <a href="${item.detailUrl}" target="_blank">${item.pdftitle}</a>\n\n`;
                                     }
 
                                     // 直接问询gpt回复
@@ -376,7 +382,7 @@ const Home: React.FC = () => {
 
 
     const avatar = <Avatar style={{ backgroundColor: '#0070c0', }} icon={<UserOutlined />} />
-    const avatarAi = <Avatar style={{ backgroundColor: '#19c37d', width: "35px", height: "35px",marginTop:"10px" }} icon={<RedditOutlined />} />
+    const avatarAi = <Avatar style={{ backgroundColor: '#19c37d', width: "35px", height: "35px", marginTop: "10px" }} icon={<RedditOutlined />} />
 
 
     return (
@@ -483,9 +489,9 @@ const Home: React.FC = () => {
                             ]}
                         />
                         <div className="inputMsg_right">
-                        <Input placeholder="请输入您的问题" onChange={iptChange} value={currentMessage} />
+                            <Input placeholder="请输入您的问题" onChange={iptChange} value={currentMessage} />
 
-                        <Button disabled={!flag} type="primary" onClick={addMessage} icon={<ArrowUpOutlined />} />
+                            <Button disabled={!flag} type="primary" onClick={addMessage} icon={<ArrowUpOutlined />} />
                         </div>
 
                     </Space.Compact>

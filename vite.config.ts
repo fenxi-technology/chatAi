@@ -9,8 +9,8 @@ export default defineConfig({
       // 正则表达式写法
       // '/api': 'http://43x818e468.zicp.fun:5001'
       // '/api': 'https://ems.fenxi-tech.com'
-      // "/api": "http://192.168.21.251:3100",
-      "/api": "http://localhost:3100",
+      "/api": "http://192.168.21.251:3200",
+      // "/api": "http://localhost:3100",
     },
   },
   plugins: [react()],
