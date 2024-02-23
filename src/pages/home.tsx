@@ -238,7 +238,7 @@ const Home: React.FC = () => {
         console.log('current.scrollHeight: ', current.scrollHeight);
     }, [items])
 
-    //测试
+
     useEffect(() => {
         if (messageType.trim() !== '' && currentMessage.trim() !== '') {
             if (messageType === '2') {
